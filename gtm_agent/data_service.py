@@ -72,6 +72,7 @@ def save_profile_to_db(prospect_id, profile):
     _PROFILES[prospect_id] = profile
     return {"saved": True}
 
+@traceable(run_type="tool", name="update_prospect_info_write")
 def update_prospect_info(prospect_id, technology):
     "Add a technology to a prospect's source-of-truth record."
     record = PROSPECTS.get(prospect_id)
@@ -80,4 +81,8 @@ def update_prospect_info(prospect_id, technology):
     tech_stack = list(record["tech_stack"])
     if technology not in tech_stack:
         tech_stack.append(technology)
-    return {"updated": True, "found": True, "tech_stack": tech_stack}
+    record["tech_stack"] = tech_stack
+    cached_profile = _PROFILES.get(prospect_id)
+    if cached_profile is not None:
+        cached_profile["tech_stack"] = tech_stack
+    return {"updated": True, "found": True, "tech_stack": record["tech_stack"]}
